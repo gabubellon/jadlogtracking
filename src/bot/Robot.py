@@ -1,8 +1,9 @@
 import logging
-import requests
+from json import dump, dumps, loads
 from time import sleep
+
+import requests
 from bs4 import BeautifulSoup
-from json import dumps, loads, dump
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
@@ -15,10 +16,22 @@ class Bot:
         self.execPath = executable_path
 
         self.searchBox = '//*[@id="termo"]'
-        self.detailsSpan = '/html/body/div[4]/div/form/div[1]/div[2]/table/tbody/tr[2]/td/div/a/h4/span'
-        self.table = '/html/body/div[4]/div/form/div[1]/div[2]/table/tbody/tr[2]/td/div/div[2]/div/div[2]/table'
-
+        self.detailsSpan = '/html/body/div[5]/div/form/div[1]/div[2]/table/tbody/tr[2]/td/div/a/h4/span'
+        self.table = '/html/body/div[5]/div/form/div[1]/div[2]/table/tbody/tr[2]/td/div/div[2]/div/div[2]/table'
+        self.recaptcha= '/html/body/div[2]/div[3]/div[1]/div/div/span/div[1]'
+ 
+        
         self.token = telegramToken
+
+    def findrecaptcha(self,driver):
+        try:
+            detailrecaptcha = driver.find_element_by_xpath(self.recaptcha)
+            detailrecaptcha.click()
+        except:
+            pass
+
+        return driver
+
     
     def parseData(self):
         options = Options()
@@ -27,6 +40,7 @@ class Bot:
         logging.info(f'Accessing jadlog')
         driver = webdriver.Firefox(executable_path=self.execPath, options=options)
         driver.get(self.trackURL)
+        driver = self.findrecaptcha(driver)
 
         logging.warning('Waiting 30 seconds after access jadlog')
         sleep(30)
@@ -35,6 +49,7 @@ class Bot:
         searchInput = driver.find_element_by_xpath(self.searchBox)
         searchInput.send_keys(self.trackID)
         searchInput.send_keys(Keys.RETURN)
+        driver = self.findrecaptcha(driver)
 
         logging.warning('Waiting 15 seconds after sent trackid')
         sleep(15)
@@ -42,6 +57,7 @@ class Bot:
         logging.info('Opening details')
         detailSpan = driver.find_element_by_xpath(self.detailsSpan)
         detailSpan.click()
+        driver = self.findrecaptcha(driver)
 
         logging.warning('Waiting 15 seconds after open details')
         sleep(15)
@@ -105,8 +121,8 @@ class Bot:
 
         data = self.parseData()
         
-        if data["status"] != status["status"]:
-            self.sendMessage(lastStatus=data["status"][-1], chatID=chatID)
+        # if data["status"] != status["status"]:
+        #     self.sendMessage(lastStatus=data["status"][-1], chatID=chatID)
         
         try:
             with open(statusfile, 'w') as outputfile:

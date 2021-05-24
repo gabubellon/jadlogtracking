@@ -15,3 +15,5 @@ soupsieve==2.0.1
 toml==0.10.2
 urllib3==1.25.11
 wrapt==1.12.1
+python-telegram-bot 
+python-decouple

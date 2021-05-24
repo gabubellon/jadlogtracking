@@ -1,0 +1,10 @@
+
+version: "3"
+services:
+  jadlog:
+    container_name: jadlog
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
